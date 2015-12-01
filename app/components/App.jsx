@@ -1,82 +1,38 @@
 import React from 'react';
 import Notes from './Notes.jsx';
-import uuid from 'node-uuid';
+import NoteActions from '../actions/NoteActions'; 
+import NoteStore from '../stores/NoteStore';
 
 export default class App extends React.Component {
 	constructor(props) {
 		super(props);
 
-		this.state = {
-			notes: [
-				{
-					id: uuid.v4(),
-					task: 'Learn Webpack'
-				},
-				{
-					id: uuid.v4(),
-					task: 'Learn React'
-				},
-				{
-					id: uuid.v4(),
-					task: 'Learn Everything'
-				}
-			]
-		}
+		this.state = NoteStore.getState();
 	}
 
-	renderNote(note) {
-		return (
-			<li key={note.id}>
-				<Note task={note.task} />
-			</li>
-		);
+	componentDidMount() {
+		NoteStore.listen(this.storeChanged); 
+	}
+
+	componentWillUnmount() { 
+		NoteStore.unlisten(this.storeChanged);
+  	}
+
+  	 storeChanged = (state) => {
+		// Without a property initializer `this` wouldn't
+		// point at the right context (defaults to `window`). this.setState(state);
 	}
 
 	addNote() { //addNote = () => let bind to this or use this.addNote.bind(this);
-		this.setState({
-			notes: this.state.notes.concat([{
-				id: uuid.v4(),
-				task: 'New task'
-			}])
-		});
+		NoteActions.create({task: 'New task'});
 	}
 
 	editNote(id, task) {
-		const notes = this.state.notes;
-		const noteIndex = this.findNote(id);
-
-		if (noteIndex < 0) {
-			return;
-		}
-
-		notes[noteIndex].task = task;
-
-		//shorthand - {notes} is the same as {notes: notes}
-		this.setState({notes});
+		NoteActions.update({id, task});
 	}
 
 	deleteNote(id) {
-		const notes = this.state.notes;
-		const noteIndex = this.findNote(id);
-
-		if (noteIndex < 0) {
-			return;
-		}
-
-		this.setState({
-			notes: notes.slice(0, noteIndex).concat(notes.slice(noteIndex + 1))
-		});
-	}
-
-	findNote(id) {
-		const notes = this.state.notes;
-		const noteIndex = notes.findIndex((note) => note.id === id);
-
-		if (noteIndex < 0) {
-			console.warn('Failed to find note', notes, id);
-		}
-
-		return noteIndex;
+		NoteActions.delete(id);
 	}
 
 	render() {
