@@ -11,14 +11,14 @@ export default class App extends React.Component {
 	}
 
 	componentDidMount() {
-		NoteStore.listen(this.storeChanged); 
+		NoteStore.listen(this.storeChanged).bind(this); 
 	}
 
 	componentWillUnmount() { 
-		NoteStore.unlisten(this.storeChanged);
+		NoteStore.unlisten(this.storeChanged).bind(this);
   	}
 
-  	 storeChanged = (state) => {
+  	 storeChanged(state) {
 		// Without a property initializer `this` wouldn't
 		// point at the right context (defaults to `window`). this.setState(state);
 	}
