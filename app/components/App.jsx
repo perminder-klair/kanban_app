@@ -1,49 +1,22 @@
 import React from 'react';
-import Notes from './Notes.jsx';
-import NoteActions from '../actions/NoteActions'; 
-import NoteStore from '../stores/NoteStore';
+import AltContainer from 'alt-container';
+import Lanes from './Lanes.jsx';
+import LaneActions from '../actions/LaneActions'; 
+import LaneStore from '../stores/LaneStore';
 
 export default class App extends React.Component {
-	constructor(props) {
-		super(props);
-
-		this.state = NoteStore.getState();
-	}
-
-	componentDidMount() {
-		NoteStore.listen(this.storeChanged).bind(this); 
-	}
-
-	componentWillUnmount() { 
-		NoteStore.unlisten(this.storeChanged).bind(this);
-  	}
-
-  	 storeChanged(state) {
-		// Without a property initializer `this` wouldn't
-		// point at the right context (defaults to `window`). this.setState(state);
-	}
-
-	addNote() { //addNote = () => let bind to this or use this.addNote.bind(this);
-		NoteActions.create({task: 'New task'});
-	}
-
-	editNote(id, task) {
-		NoteActions.update({id, task});
-	}
-
-	deleteNote(id) {
-		NoteActions.delete(id);
+	addItem() { //addNote = () => let bind to this or use this.addNote.bind(this);
+		LaneActions.create({name: 'New lane'});
 	}
 
 	render() {
-		const notes = this.state.notes;
-
 		return (
 			<div>
-				<button className="add-note" onClick={this.addNote.bind(this)}>+</button>
-				<Notes items={notes} 
-					onEdit={this.editNote.bind(this)}
-					onDelete={this.deleteNote.bind(this)} />
+				<button className="add-lane" onClick={this.addItem.bind(this)}>+</button>
+				<AltContainer stores={[LaneStore]}
+				inject={{items:() => LaneStore.getState().lanes || []}}>
+					<Lanes />
+				</AltContainer>		
 			</div>
 		);
 	}
