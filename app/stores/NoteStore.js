@@ -2,58 +2,62 @@ import uuid from 'node-uuid';
 import alt from '../libs/alt';
 import NoteActions from '../actions/NoteActions';
 
-class NoteStore { 
-	constructor() {
-		this.bindActions(NoteActions); 
-		this.notes = [];
-  	}
+class NoteStore {
+  constructor() {
+    this.bindActions(NoteActions);
 
-  	create(note) {
-		const notes = this.notes;
+    this.notes = [];
 
-		note.id = uuid.v4();
+    this.exportPublicMethods({
+      get: this.get.bind(this)
+    });
+  }
+  create(note) {
+    const notes = this.notes;
 
-		this.setState({
-			notes: notes.concat(note)
-		});
-  	}
+    note.id = uuid.v4();
 
-  	update({id, task}) {
-		const notes = this.notes;
-		const noteIndex = this.findNote(id);
+    this.setState({
+      notes: notes.concat(note)
+    });
+  }
+  update({id, task}) {
+    const notes = this.notes;
+    const noteIndex = this.findNote(id);
 
-		if(noteIndex < 0) { 
-			return;
-		}
+    if(noteIndex < 0) {
+      return;
+    }
 
-		notes[noteIndex].task = task;
+    notes[noteIndex].task = task;
 
-		this.setState({notes});
-	} 
+    this.setState({notes});
+  }
+  delete(id) {
+    const notes = this.notes;
+    const noteIndex = this.findNote(id);
 
-	delete(id) {
-		const notes = this.notes;
-		const noteIndex = this.findNote(id);
+    if(noteIndex < 0) {
+      return;
+    }
 
-		if(noteIndex < 0) { 
-			return;
-		}
+    this.setState({
+      notes: notes.slice(0, noteIndex).concat(notes.slice(noteIndex + 1))
+    });
+  }
+  findNote(id) {
+    const notes = this.notes;
+    const noteIndex = notes.findIndex((note) => note.id === id);
 
-		this.setState({
-			notes: notes.slice(0, noteIndex).concat(notes.slice(noteIndex + 1))
-		});
-	} 
+    if(noteIndex < 0) {
+      console.warn('Failed to find note', notes, id);
+    }
 
-	findNote(id) {
-		const notes = this.notes;
-		const noteIndex = notes.findIndex((note) => note.id === id);
-
-		if(noteIndex < 0) {
-			console.warn('Failed to find note', notes, id);
-		}
-
-		return noteIndex; 
-	}
+    return noteIndex;
+  }
+  get(ids) {
+    return (ids || []).map((id) => this.notes[this.findNote(id)]).filter((a) => a);
+  }
 }
 
 export default alt.createStore(NoteStore, 'NoteStore');
